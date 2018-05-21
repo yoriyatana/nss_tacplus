@@ -16,7 +16,21 @@ To build it:
 
    ```
    $ git clone https://github.com/jeroennijhof/pam_tacplus.git
+   ```
+   You need to edit some source code for fallback to local authentication if Tacplus server is unreachable:
+   
+   ```
    $ cd pam_tacplus
+   $ vim pam_tacplus.c
+   ```
+   
+   ```
+   Insert new line after `line 294` with content `status = PAM_IGNORE;`
+   Comment `line 591` and insert new line after `line 591` with content `return PAM_IGNORE;`
+   ```
+   
+   After edit the src, build & install the project:
+   ```
    $ autoreconf -i && ./configure && make && sudo make install
    ```
 
@@ -24,20 +38,25 @@ To build it:
    source, and build the project:
  
    ```
+   $ cd ..
    $ git clone https://github.com/benschumacher/nss_tacplus.git
    $ cd nss_tacplus
-   $ make
+   $ make && make test
    ```
 
 4. You should now have a `libnss_tacplus.so.2` library:
  
    ```
    $ ls -l libnss_tacplus.so.2
-   -rwxrwxr-x. 1 vagrant vagrant 96759 Sep 19 18:04 libnss_tacplus.so.2*
+   -rwxrwxr-x. 1 vagrant vagrant 96759 Sep 19 18:04 libnss_tacplus.so.2
    ```
 
-5. Profit!
+5. Profit! Copy the module to the library:
 
+   ```
+   cp libnss_tacplus.so.2 /lib64/
+   ```
+   
 Assuming you've made it this far, you may want to figure out if it works.
 
 ## TACACS+ Service Requirements
@@ -117,17 +136,17 @@ Authorization query for a given 'username':
    To install it, copy it into your `/etc` directory:
    
    ```
-   $ sudo cp tacplus.conf /etc/tacplus.conf
+   $ sudo cp etc/tacplus.conf /etc/tacplus.conf
    ```
 
 2. There is also a user-unfriendly tool that you can use to validate that
    the library is working with. You use it like this:
    
    ```
-   $ ./dlharness ./libnss_tacplus.so.2 _nss_tacplus_getpwnam_r bschumac
+   $ bin/dlharness ./libnss_tacplus.so.2 _nss_tacplus_getpwnam_r bschumac
    User `bschumac' found:
    bschumac:x:504:503:bschumac:/home/bschumac:/usr/bin/sudosh
-   $ ./dlharness ./libnss_tacplus.so.2 _nss_tacplus_getpwnam_r unknown
+   $ bin/dlharness ./libnss_tacplus.so.2 _nss_tacplus_getpwnam_r unknown
    Error: Can't find user `unknown': 0
    ```
 
@@ -148,7 +167,13 @@ Authorization query for a given 'username':
    'tacacs.pam' file into your /etc/pam.d:
    
    ```
-   $ sudo cp tacacs.pam /etc/pam.d/tacacs
+   $ sudo cp etc/pam.d/tacacs+ /etc/pam.d/tacacs
+   ```
+Change the /etc/pam.d/tacplus as follow:
+   ```
+   auth  [success=done default=bad authinfo_unavail=bad ignore=ignore] pam_tacplus.so debug server=10.1.1.1 secret=password login=plain timeout=1
+   account [success=done default=bad ignore=ignore] pam_tacplus.so debug service=linuxlogin protocol=ssh timeout=1
+   session optional pam_tacplus.so debug server=10.1.1.1 secret=password service=linuxlogin protocol=ssh timeout=1
    ```
 
    Then enable it with SSHD by editing '/etc/pam.d/sshd' and make these
@@ -159,7 +184,17 @@ Authorization query for a given 'username':
    'account include tacacs' above 'account include password-auth'
    'session include tacacs' above 'session include password-auth'
    ```
-
+   
+Add the local user on the system:
+   ```
+   useradd -m -d /home/netnam2 -s /bin/bash -u 502 -g 502 -U netnam2 
+   ```
+Modify the NSSwith 
+   ```
+   vim /etc/nsswitch.conf
+   `passwd:     tacplus files`
+   ```
+   
 5. Ensure 'nscd' is running:
 
    ```
