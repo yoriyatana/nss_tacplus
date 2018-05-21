@@ -26,6 +26,7 @@ To build it:
    
    
    > Insert new line after `line 294` with content `status = PAM_IGNORE;`
+   
    > Comment `line 591` and insert new line after `line 591` with content `return PAM_IGNORE;`
    
    After edit the src, build & install the project:
