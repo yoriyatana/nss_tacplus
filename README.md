@@ -8,38 +8,25 @@ To build it:
    with CentOS 6.5, should work with 7, as well):
 
    ```
+   $ yum install -y vim pam-devel
    $ yum groupinstall -y "Development Tools"
    ```
 
-2. You'll need a recent version of the [pam_tacplus](https://github.com/jeroennijhof/pam_tacplus)
+2. You'll need a recent version of the [pam_tacplus](https://github.com/yoriyatana/pam_tacplus)
    code checked out from GitHub and build:
 
    ```
-   $ git clone https://github.com/jeroennijhof/pam_tacplus.git
-   ```
-   You need to edit some source code for fallback to local authentication if Tacplus server is unreachable:
-   
-   ```
+   $ git clone https://github.com/yoriyatana/pam_tacplus.git
    $ cd pam_tacplus
-   $ vim pam_tacplus.c
-   ```
-   
-   
-   > Insert new line after `line 293` with content `status = PAM_IGNORE;`
-   
-   > Comment `line 591` and insert new line after `line 591` with content `return PAM_IGNORE;`
-   
-   After edit the src, build & install the project:
-   ```
-   $ autoreconf -i && ./configure && make && sudo make install
+   $ auto.sh && ./configure && make && sudo make install
    ```
 
-3. Acquire the [nss_tacplus](https://github.com/benschumacher/nss_tacplus)
+3. Acquire the [nss_tacplus](https://github.com/yoriyatana/nss_tacplus)
    source, and build the project:
  
    ```
    $ cd ..
-   $ git clone https://github.com/benschumacher/nss_tacplus.git
+   $ git clone https://github.com/yoriyatana/nss_tacplus.git
    $ cd nss_tacplus
    $ make && make test
    ```
@@ -132,11 +119,11 @@ Authorization query for a given 'username':
 
 ## Using TACACS+ NSS module
 
-1. There should be a sample configuration file in the `etc' directory.
+1. There should be a sample configuration file in the `etc` directory.
    To install it, copy it into your `/etc` directory:
    
    ```
-   $ sudo cp etc/tacplus.conf /etc/tacplus.conf
+   $ cp etc/tacplus.conf /etc/tacplus.conf
    ```
 
 2. There is also a user-unfriendly tool that you can use to validate that
@@ -153,10 +140,10 @@ Authorization query for a given 'username':
    (That's right -- library and symbol names passed in via positional
    arguments. Take that UX-perts.)
 
-   That integer value at the end correlates to an `nss_status' value.
+   That integer value at the end correlates to an `nss_status` value.
    You can find those documented here: http://goo.gl/Dh6CrE
 
-3. To test the "full stack" solution, you'll need 'nscd' installed,
+3. To test the "full stack" solution, you'll need `nscd` installed,
    as well:
    
    ```
@@ -169,12 +156,6 @@ Authorization query for a given 'username':
    ```
    $ sudo cp etc/pam.d/tacacs+ /etc/pam.d/tacacs
    ```
-Change the /etc/pam.d/tacplus as follow:
-   ```
-   auth  [success=done default=bad authinfo_unavail=bad ignore=ignore] pam_tacplus.so debug server=10.1.1.1 secret=password login=plain timeout=1
-   account [success=done default=bad ignore=ignore] pam_tacplus.so debug service=linuxlogin protocol=ssh timeout=1
-   session optional pam_tacplus.so debug server=10.1.1.1 secret=password service=linuxlogin protocol=ssh timeout=1
-   ```
 
    Then enable it with SSHD by editing '/etc/pam.d/sshd' and make these
    modifications:
@@ -185,26 +166,28 @@ Change the /etc/pam.d/tacplus as follow:
    'session include tacacs' above 'session include password-auth'
    ```
    
-Add the local user on the system:
+5. Add the local user on the system:
    ```
-   useradd -m -d /home/netnam2 -s /bin/bash -u 502 -g 502 -U netnam2 
+   groupaadd -g 1002 netnam2
+   useradd -m -d /home/netnam2 -s /bin/bash -u 1002 -g 1002 netnam2 
    ```
-Modify the NSSwith 
+   
+6. Ensure 'nscd' is running:
+
+   ```
+   $ chkconfig nscd on
+   $ service nscd restart
+   ```
+7. Modify the NSSwith 
    ```
    vim /etc/nsswitch.conf
    `passwd:     tacplus files`
    ```
-   
-5. Ensure 'nscd' is running:
 
-   ```
-   $ service nscd restart
-   ```
-
-6. At this point you *should* be able to SSH into the system using
+ At this point you *should* be able to SSH into the system using
    TACACS+ accounts.
 
-7. If you make changes and need to test something, it may be necessary
+8. If you make changes and need to test something, it may be necessary
    to restart nscd and clear its cache:
    
    ```
