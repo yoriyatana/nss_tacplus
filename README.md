@@ -169,8 +169,7 @@ Authorization query for a given 'username':
    
 5. Add the local user on the system:
    ```
-   groupaadd -g 1002 netnam2
-   useradd -m -d /home/netnam2 -s /bin/bash -u 1002 -g 1002 netnam2 
+   useradd -m -d /home/netnam2 -s /bin/bash -u 1002 -U netnam2 
    ```
    
 6. Ensure 'nscd' is running:
