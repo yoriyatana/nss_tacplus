@@ -20,7 +20,10 @@ To build it:
    $ cd pam_tacplus
    $ auto.sh && ./configure && make && sudo make install
    ```
-
+   Copy the module to the library:
+   ```
+   cp /usr/local/lib/security/pam_tacplus.so /lib64/security/
+   ```
 3. Acquire the [nss_tacplus](https://github.com/yoriyatana/nss_tacplus)
    source, and build the project:
  
@@ -37,9 +40,7 @@ To build it:
    $ ls -l libnss_tacplus.so.2
    -rwxrwxr-x. 1 vagrant vagrant 96759 Sep 19 18:04 libnss_tacplus.so.2
    ```
-
-5. Profit! Copy the module to the library:
-
+   Copy the module to the library:
    ```
    cp libnss_tacplus.so.2 /lib64/
    ```
