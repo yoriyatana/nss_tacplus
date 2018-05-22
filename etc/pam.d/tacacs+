@@ -13,12 +13,12 @@
 ##
 ######################################################################
 
-auth  [success=2 default=ignore] pam_succeed_if.so uid < 501
+auth  [success=2 default=ignore] pam_succeed_if.so uid < 1001
 auth  [success=1 default=ignore] pam_succeed_if.so user in root
-auth  [success=done default=ignore]	/usr/local/lib/security/pam_tacplus.so debug server=10.0.0.1 secret=password login=plain timeout=2
+auth  [success=done default=bad authinfo_unavail=bad ignore=ignore]	pam_tacplus.so debug server=10.0.0.1 secret=password login=plain timeout=1
 
-account [success=2 default=ignore] pam_succeed_if.so uid < 501
+account [success=2 default=ignore] pam_succeed_if.so uid < 1001
 account [success=1 default=ignore] pam_succeed_if.so user in roots
-account	sufficient /usr/local/lib/security/pam_tacplus.so debug service=linuxlogin protocol=ssh timeout=2
+account	[success=done default=bad ignore=ignore] pam_tacplus.so debug service=linuxlogin protocol=ssh timeout=1
 
-session optional /usr/local/lib/security/pam_tacplus.so debug server=10.0.0.1 secret=password service=linuxlogin protocol=ssh timeout=2
+session optional /usr/local/lib/security/pam_tacplus.so debug server=10.0.0.1 secret=password service=linuxlogin protocol=ssh timeout=1
