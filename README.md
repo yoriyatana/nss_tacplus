@@ -18,7 +18,7 @@ To build it:
    ```
    $ git clone https://github.com/yoriyatana/pam_tacplus.git
    $ cd pam_tacplus
-   $ auto.sh && ./configure && make && sudo make install
+   $ autoreconf -f -v -i && ./configure && make && sudo make install
    ```
    Copy the module to the library:
    ```
