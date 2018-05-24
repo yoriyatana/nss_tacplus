@@ -21,4 +21,4 @@ account [success=2 default=ignore] pam_succeed_if.so uid < 1001
 account [success=1 default=ignore] pam_succeed_if.so user in roots
 account	[success=done default=bad ignore=ignore] pam_tacplus.so debug service=linuxlogin protocol=ssh timeout=1
 
-session optional /usr/local/lib/security/pam_tacplus.so debug server=10.0.0.1 secret=password service=linuxlogin protocol=ssh timeout=1
+session optional pam_tacplus.so debug server=10.0.0.1 secret=password service=linuxlogin protocol=ssh timeout=1
