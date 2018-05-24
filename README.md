@@ -181,7 +181,7 @@ Authorization query for a given 'username':
 7. Modify the NSSwith 
    ```
    vim /etc/nsswitch.conf
-   `passwd:     tacplus files`
+   `passwd:     files tacplus`
    ```
 
  At this point you *should* be able to SSH into the system using
